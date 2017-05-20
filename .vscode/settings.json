@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "array": "cpp",
+        "slist": "cpp",
+        "initializer_list": "cpp",
+        "algorithm": "cpp",
+        "ostream": "cpp"
+    }
+}
