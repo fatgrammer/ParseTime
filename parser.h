@@ -30,7 +30,7 @@ struct Node {
     std::cout << op_ << " ";
   }
 
-  static void parse(std::unique_ptr<Node<T>>& root, T val) {
+  static void addNode(std::unique_ptr<Node<T>>& root, T val) {
     if (root->left == nullptr && val == "(") {
       std::unique_ptr<Node<T>> tRoot = std::make_unique<Node<T>>();
       root->left = std::move(tRoot);

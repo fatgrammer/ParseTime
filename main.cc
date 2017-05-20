@@ -33,7 +33,7 @@ void buildAndTest() {
   unique_ptr<Node<string>> root = make_unique<Node<string>>();
   Node<string>::RootStack.push_back(&root);
   for_each(split.begin(), split.end(), [&root](string &e) {
-    Node<string>::parse(*Node<string>::RootStack.back(), e);
+    Node<string>::addNode(*Node<string>::RootStack.back(), e);
   });
   root->inTraverse();
   cout << endl;
