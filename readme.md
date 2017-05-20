@@ -1,6 +1,6 @@
 Simple Arithmetic Parser
 ===
-Translate a string of arithmetic formula from infix expression to suffix expression.
+Translate a string of arithmetic formula from infix to suffix expression.
 ---
 ### This parser use a syntax tree. I don' t know exactly what the structure it is. Just code for fun.
 ### Build the tree then traverse it in postorder.
