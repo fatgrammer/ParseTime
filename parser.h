@@ -4,13 +4,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-template <typename T>
 struct Node {
   // This vector save the pointer of locale root when left parentheses is
   // encoutered, for parentheses break the priority.
   // Use raw pointer here should have no problem
-  static std::vector<std::unique_ptr<Node<T>>*> RootStack;
-
+  static std::vector<std::unique_ptr<Node>*> RootStack;
+  static std::vector<std::string> ops;
+  static std::vector<std::string>::iterator index;
   void inTraverse() {
     if (this->left != nullptr) {
       this->left->inTraverse();
@@ -30,48 +30,112 @@ struct Node {
     std::cout << op_ << " ";
   }
 
-  static void addNode(std::unique_ptr<Node<T>>& root, T val) {
+  static void addNode(std::unique_ptr<Node>& root, std::string val) {
     if (root->left == nullptr && val == "(") {
-      std::unique_ptr<Node<T>> tRoot = std::make_unique<Node<T>>();
+      std::unique_ptr<Node> tRoot = std::make_unique<Node>();
       root->left = std::move(tRoot);
-      Node<T>::RootStack.push_back(&(root->left));
+      Node::RootStack.push_back(&(root->left));
     } else if (root->right == nullptr && val == "(") {
-      std::unique_ptr<Node<T>> tRoot = std::make_unique<Node<T>>();
+      std::unique_ptr<Node> tRoot = std::make_unique<Node>();
       root->right = std::move(tRoot);
-      Node<T>::RootStack.push_back(&(root->right));
+      Node::RootStack.push_back(&(root->right));
     } else if (val == ")") {
-      Node<T>::RootStack.pop_back();
+      Node::RootStack.pop_back();
     } else if (root->left == nullptr) {
-      root->left = std::make_unique<Node<T>>();
+      root->left = std::make_unique<Node>();
       root->left->op_ = val;
     } else if (root->op_.empty()) {
       root->op_ = val;
     } else if (root->right == nullptr) {
-      root->right = std::make_unique<Node<T>>();
+      root->right = std::make_unique<Node>();
       root->right->op_ = val;
     } else if (val == "+" || val == "-") {
-      std::unique_ptr<Node<T>> tmp = std::make_unique<Node<T>>();
+      std::unique_ptr<Node> tmp = std::make_unique<Node>();
       tmp->op_ = val;
       tmp->left = std::move(root);
       root = std::move(tmp);
     } else if (val == "*" || val == "/") {
-      std::unique_ptr<Node<T>> tmp = std::make_unique<Node<T>>();
+      std::unique_ptr<Node> tmp = std::make_unique<Node>();
       tmp->op_ = val;
       tmp->left = std::move(root->right);
       root->right = std::move(tmp);
     } else {
-      parse(root->right, val);
+      addNode(root->right, val);
     }
   }
   Node() = default;
-  ~Node();
   Node(const Node&) = delete;
   Node& operator=(const Node&) = delete;
   std::unique_ptr<Node> left;
   std::unique_ptr<Node> right;
-  T op_;
+  std::string op_;
 };
-template <typename T>
-std::vector<std::unique_ptr<Node<T>>*> Node<T>::RootStack{};
+std::vector<std::unique_ptr<Node>*> Node::RootStack{};
+std::vector<std::string> Node::ops{};
+std::vector<std::string>::iterator Node::index;
+
+// Another systax translator
+void match(std::string op) {
+  if (*Node::index == op) {
+    ++Node::index;
+  } else {
+    std::cerr << "syntax error!" << std::endl;
+    exit(1);
+  }
+}
+bool is_number(const std::string& s) {
+  return !s.empty() && std::find_if(s.begin(), s.end(), [](char c) {
+                         return !std::isdigit(c);
+                       }) == s.end();
+}
+void term() {
+  if (is_number(*Node::index)) {
+    std::cout << *Node::index << " ";
+    match(*Node::index);
+  } else {
+    std::cerr << "syntax error" << std::endl;
+    exit(0);
+  }
+}
+void expr() {
+  using namespace std;
+  term();
+  while (true) {
+    if (*Node::index == "+") {
+      match("+");
+      term();
+      cout << "+"
+           << " ";
+      continue;
+    } else if (*Node::index == "-") {
+      match("-");
+      term();
+      cout << "-"
+           << " ";
+      continue;
+    }
+    break;
+  }
+}
+
+void preProc(std::string& expr) {
+  using namespace std;
+  // simple lexical processing
+  Node::ops.push_back("");
+  for (size_t i = 0; i != expr.size(); ++i) {
+    if (isdigit(expr[i])) {
+      if (i > 0 && !isdigit(expr[i - 1])) {
+        Node::ops.push_back("");
+      }
+      Node::ops.back().push_back(expr[i]);
+    } else {
+      Node::ops.push_back("");
+      Node::ops.back().push_back(expr[i]);
+    }
+  }
+  for_each(Node::ops.begin(), Node::ops.end(), [](string e) { cout << e; });
+  cout << endl;
+  Node::index = Node::ops.begin();
+}
 
 #endif
