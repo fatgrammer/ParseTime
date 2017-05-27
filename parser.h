@@ -4,18 +4,16 @@
 #include <memory>
 #include <string>
 #include <vector>
+void printo(std::string op) { std::cout << op << " "; }
 struct Node {
   // This vector save the pointer of locale root when left parentheses is
   // encoutered, for parentheses break the priority.
   // Use raw pointer here should have no problem
-  static std::vector<std::unique_ptr<Node>*> RootStack;
-  static std::vector<std::string> ops;
-  static std::vector<std::string>::iterator index;
   void inTraverse() {
     if (this->left != nullptr) {
       this->left->inTraverse();
     }
-    std::cout << op_ << " ";
+    printo(op_);
     if (this->right != nullptr) {
       this->right->inTraverse();
     }
@@ -27,7 +25,7 @@ struct Node {
     if (this->right != nullptr) {
       this->right->postTraverse();
     }
-    std::cout << op_ << " ";
+    printo(op_);
   }
 
   static void addNode(std::unique_ptr<Node>& root, std::string val) {
@@ -69,15 +67,19 @@ struct Node {
   std::unique_ptr<Node> left;
   std::unique_ptr<Node> right;
   std::string op_;
+
+  static std::vector<std::unique_ptr<Node>*> RootStack;
+  static std::vector<std::string> ops;
+  static std::vector<std::string>::iterator Lookahead;
 };
 std::vector<std::unique_ptr<Node>*> Node::RootStack{};
 std::vector<std::string> Node::ops{};
-std::vector<std::string>::iterator Node::index;
+std::vector<std::string>::iterator Node::Lookahead;
 
 // Another systax translator
 void match(std::string op) {
-  if (*Node::index == op) {
-    ++Node::index;
+  if (*Node::Lookahead == op) {
+    ++Node::Lookahead;
   } else {
     std::cerr << "syntax error!" << std::endl;
     exit(1);
@@ -89,9 +91,9 @@ bool is_number(const std::string& s) {
                        }) == s.end();
 }
 void term() {
-  if (is_number(*Node::index)) {
-    std::cout << *Node::index << " ";
-    match(*Node::index);
+  if (is_number(*Node::Lookahead)) {
+    printo(*Node::Lookahead);
+    match(*Node::Lookahead);
   } else {
     std::cerr << "syntax error" << std::endl;
     exit(0);
@@ -101,23 +103,20 @@ void expr() {
   using namespace std;
   term();
   while (true) {
-    if (*Node::index == "+") {
+    if (*Node::Lookahead == "+") {
       match("+");
       term();
-      cout << "+"
-           << " ";
+      printo("+");
       continue;
-    } else if (*Node::index == "-") {
+    } else if (*Node::Lookahead == "-") {
       match("-");
       term();
-      cout << "-"
-           << " ";
+      printo("-");
       continue;
     }
     break;
   }
 }
-
 void preProc(std::string& expr) {
   using namespace std;
   // simple lexical processing
@@ -135,7 +134,7 @@ void preProc(std::string& expr) {
   }
   for_each(Node::ops.begin(), Node::ops.end(), [](string e) { cout << e; });
   cout << endl;
-  Node::index = Node::ops.begin();
+  Node::Lookahead = Node::ops.begin();
 }
 
 #endif

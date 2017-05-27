@@ -9,7 +9,7 @@ void buildAndTest();
 void syntaxTranslate();
 void preProc(std::string &expr);
 int main(void) {
-  //  buildAndTest(); 
+  //  buildAndTest();
   std::string str = "1+3-10";
   preProc(str);
   expr();
@@ -31,6 +31,4 @@ void buildAndTest() {
   root->postTraverse();
   cout << endl;
 }
-void syntaxTranslate() {
-}
-
+void syntaxTranslate() {}
